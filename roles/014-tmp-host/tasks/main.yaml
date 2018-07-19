@@ -1,0 +1,4 @@
+- name: Adding temporary Host
+  add_host:
+    name: 192.168.10.{{ last_octect }}
+    groups: temporary

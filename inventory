@@ -1,0 +1,14 @@
+[kvms]
+#172.24.216.200 last_octect=20 ansible_user=root ansible_password=qwerty
+172.24.216.211 last_octect=30 ansible_user=root ansible_password=qwerty
+#172.24.216.202 last_octect=40 ansible_user=root ansible_password=qwerty
+
+
+[kvm-2]
+192.168.10.20 ansible_user=root ansible_password=qwerty
+
+[kvm-1]
+192.168.10.10 ansible_user=root ansible_password=qwerty
+
+[kvm-3]
+192.168.10.30 ansible_user=root ansible_password=qwerty

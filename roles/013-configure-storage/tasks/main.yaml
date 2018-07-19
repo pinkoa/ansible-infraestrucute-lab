@@ -1,0 +1,41 @@
+- name: Create or resize a volume group on top of /dev/sdb.
+  lvg:
+    vg: vm_vg
+    pvs: /dev/sdb
+
+- name: Create logical volumes for VMs
+  lvol:
+   vg: vm_vg
+   lv: vms_lv
+   size: 100%FREE
+   state: present
+   shrink: no
+
+- name: Create Filesystem on logical volume vms_lv
+  filesystem:
+    fstype: xfs
+    dev: /dev/mapper/vm_vg-vms_lv
+
+- name: Create mount point
+  file:
+    state: directory
+    path: /VMS
+
+- name: mount filesystem
+  mount:
+    path: /VMS
+    src: /dev/mapper/vm_vg-vms_lv
+    fstype: xfs
+    state: mounted
+
+- name: Create Directories for VMs
+  file:
+    state: directory
+    path: /VMS/{{ item }}
+  with_items:
+    - VMS
+    - ISOS
+
+- name: Disable Selinux
+  selinux:
+    state: disabled

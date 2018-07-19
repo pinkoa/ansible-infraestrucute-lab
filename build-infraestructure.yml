@@ -1,0 +1,99 @@
+- name: Build Infraestructure
+  hosts: kvm-3
+  vars:
+    mon_vm_drive:
+      - mon1
+      - mon2
+      - mon3
+    osd_vm_drive:
+      - osd1
+      - osd2
+      - osd3
+      - osd4
+      - osd5
+      - osd6
+    osd_data_vm_drive:
+      - disk1
+      - disk2
+      - disk3
+      - disk4
+      - disk5
+      - disk6
+    openstack_vm_drive:
+      - undercloud
+      - controller01
+      - controller02
+      - controller03
+      - compute01
+      - compute02
+      - compute03
+
+
+  tasks:
+    - name: Copying image_base.qcow
+      debug:
+        msg: image base copied
+
+    - name: Create Virtual Machines Drives for Openstack
+      shell: cp /VMS/VMS/image_base.qcow2 /VMS/VMS/{{ item }}.qcow2
+      with_items: "{{ openstack_vm_drive }}"
+      tags:
+        - openstack
+
+    - name: Create Virtual Machines Drives for Monitors
+      shell: cp /VMS/VMS/image_base.qcow2 /VMS/VMS/{{ item }}.qcow2
+      with_items: "{{ mon_vm_drive }}"
+      tags:
+        - ceph
+
+    - name: Create Virtual Machines Drives for for OSD O.S
+      shell: cp /VMS/VMS/image_base.qcow2 /VMS/VMS/{{ item }}.qcow2
+      with_items: "{{ osd_vm_drive }}"
+      tags:
+        - ceph
+
+    - name: Create Virtual Machines Drives for OSD Data
+      shell: qemu-img create -f qcow2 /VMS/VMS/{{ item }}.qcow2 20G
+      with_items: "{{ osd_data_vm_drive }}"
+      tags:
+        - ceph
+
+    - name: Create Openstack Cluster
+      shell: 'virt-install --name {{ item }} --memory 4096 \
+      --arch x86_64 --vcpus 4 --os-type linux --os-variant rhel7 \
+      --disk /VMS/VMS/{{ item }}.qcow2,format=qcow2,bus=virtio \
+      --vnc --noautoconsole \
+      --network bridge=br-trunk,model=virtio --network bridge=br-trunk,model=virtio \
+      --network bridge=br-provisioning,model=virtio --import'
+      with_items: "{{ openstack_vm_drive }}"
+      tags:
+        - openstack
+
+    - name: Create Ceph Monitor Cluster
+      shell: 'virt-install --name {{ item }} --memory 4096 \
+      --arch x86_64 --vcpus 4 --os-type linux --os-variant rhel7 \
+      --disk /VMS/VMS/{{ item }}.qcow2,format=qcow2,bus=virtio \
+      --vnc --noautoconsole \
+      --network bridge=br-trunk,model=virtio --network bridge=br-trunk,model=virtio \
+      --network bridge=br-provisioning,model=virtio --import'
+      with_items: "{{ mon_vm_drive }}"
+      tags: 
+        - ceph
+
+    - name: Create Ceph OSD Cluster
+      shell: 'virt-install --name {{ item.os_drive }} --memory 4096 \
+      --arch x86_64 --vcpus 4 --os-type linux --os-variant rhel7 \
+      --disk /VMS/VMS/{{ item.os_drive }}.qcow2,format=qcow2,bus=virtio \
+      --disk /VMS/VMS/{{ item.data_drive }}.qcow2,format=qcow2,bus=virtio \
+      --vnc --noautoconsole \
+      --network bridge=br-trunk,model=virtio --network bridge=br-trunk,model=virtio \
+      --network bridge=br-provisioning,model=virtio --import'
+      with_items:
+         - { os_drive: osd1, data_drive: disk1 }
+         - { os_drive: osd2, data_drive: disk2 }
+         - { os_drive: osd3, data_drive: disk3 }
+         - { os_drive: osd4, data_drive: disk4 }
+         - { os_drive: osd5, data_drive: disk5 }
+         - { os_drive: osd6, data_drive: disk6 }
+      tags:
+        - ceph

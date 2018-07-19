@@ -1,0 +1,19 @@
+- name: Register KVM node with your credentials.
+  redhat_subscription:
+    state: present
+    username: "{{ rh_user }}"
+    password: "{{ rh_pass }}"
+    autosubscribe: false
+    pool_ids: "{{ pool_id }}"
+
+- name: Disable all RHSM repositories
+  rhsm_repository:
+    name: '*'
+    state: disabled
+
+- name: Enable Repositories
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items: "{{ repo_list }}"
+

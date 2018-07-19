@@ -1,0 +1,5 @@
+- name: Install Package List
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ pkg_list }}"

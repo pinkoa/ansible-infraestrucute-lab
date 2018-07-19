@@ -1,0 +1,4 @@
+- name: development playbook
+  hosts: kvm-test
+  roles:
+    - 013-configure-storage 

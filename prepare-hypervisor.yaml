@@ -1,0 +1,8 @@
+- name: Build Infraectructure Playbook
+  hosts: kvms
+  vars_files:
+    - vars/vars.yaml 
+  roles:
+    - 010-register-node
+    - 013-configure-storage
+    - 012-creating-network-layout
